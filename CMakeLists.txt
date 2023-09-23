@@ -9,7 +9,7 @@ include(libigl)
 # Enable the target igl::glfw
 igl_include(glfw)
 # Other modules you could enable
-#igl_include(embree)
+igl_include(embree)
 #igl_include(imgui)
 #igl_include(opengl)
 #igl_include(stb)
@@ -32,7 +32,7 @@ add_executable(${PROJECT_NAME} ${SRC_FILES})
 target_link_libraries(${PROJECT_NAME} PUBLIC 
   igl::glfw
   ## Other modules you could link to
-  # igl::embree
+  igl::embree
   # igl::imgui
   # igl::opengl
   # igl::stb
