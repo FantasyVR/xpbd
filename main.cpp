@@ -19,7 +19,7 @@
 #include <set>
 #include <chrono>
 
-std::vector<int> pull_points{ 811,812,813,814,815,809 };
+std::vector<int> pull_points{811, 812, 813, 814, 815, 809};
 
 // creates small spheres to visualize P on the overlay of the mesh
 // Input:
@@ -33,14 +33,14 @@ std::vector<int> pull_points{ 811,812,813,814,815,809 };
 //  V:    #V by 3 sphere mesh coordinates
 //  T     #T by 3 sphere mesh triangles
 //  C:    #T by 3 vertex-based colors
-IGL_INLINE bool point_spheres(const Eigen::MatrixXd& P,
-	const Eigen::MatrixXd& normals,
-	const double& r,
-	const Eigen::MatrixXd& sphereColors,
-	const int res,
-	Eigen::MatrixXd& V,
-	Eigen::MatrixXi& T,
-	Eigen::MatrixXd& C)
+IGL_INLINE bool point_spheres(const Eigen::MatrixXd &P,
+							  const Eigen::MatrixXd &normals,
+							  const double &r,
+							  const Eigen::MatrixXd &sphereColors,
+							  const int res,
+							  Eigen::MatrixXd &V,
+							  Eigen::MatrixXi &T,
+							  Eigen::MatrixXd &C)
 {
 	using namespace Eigen;
 	/*V.resize(res*res*P.rows(),3);
@@ -50,19 +50,22 @@ IGL_INLINE bool point_spheres(const Eigen::MatrixXd& P,
 	MatrixXd VSphere(res * res, 3);
 	MatrixXi TSphere(2 * (res - 1) * res, 3);
 
-	//creating template sphere vertices
-	for (int j = 0; j < res; j++) {
+	// creating template sphere vertices
+	for (int j = 0; j < res; j++)
+	{
 		double z = r * cos(igl::PI * (double)j / (double(res - 1)));
-		for (int k = 0; k < res; k++) {
+		for (int k = 0; k < res; k++)
+		{
 			double x = r * sin(igl::PI * (double)j / (double(res - 1))) * cos(2 * igl::PI * (double)k / (double(res)));
 			double y = r * sin(igl::PI * (double)j / (double(res - 1))) * sin(2 * igl::PI * (double)k / (double(res)));
 			VSphere.row(j * res + k) << x, y, z;
 		}
 	}
 
-
-	for (int j = 0; j < res - 1; j++) {
-		for (int k = 0; k < res; k++) {
+	for (int j = 0; j < res - 1; j++)
+	{
+		for (int k = 0; k < res; k++)
+		{
 			int v1 = j * res + k;
 			int v2 = (j + 1) * res + k;
 			int v3 = (j + 1) * res + (k + 1) % res;
@@ -72,15 +75,17 @@ IGL_INLINE bool point_spheres(const Eigen::MatrixXd& P,
 		}
 	}
 
-	//std::cout<<"TSphere: "<<TSphere<<std::endl;
+	// std::cout<<"TSphere: "<<TSphere<<std::endl;
 	V.resize(VSphere.rows() * P.rows(), 3);
 	T.resize(TSphere.rows() * P.rows(), 3);
 	C.resize(V.rows(), 3);
 
-	for (int i = 0; i < P.rows(); i++) {
+	for (int i = 0; i < P.rows(); i++)
+	{
 		RowVector3d ZAxis = normals.row(i);
 		ZAxis.normalize();
-		RowVector3d XAxis; XAxis << 0.0, -normals(i, 2), normals(i, 1);
+		RowVector3d XAxis;
+		XAxis << 0.0, -normals(i, 2), normals(i, 1);
 		if (XAxis.squaredNorm() < 1e-4)
 			XAxis << -normals(i, 2), 0.0, normals(i, 0);
 		XAxis.normalize();
@@ -88,7 +93,8 @@ IGL_INLINE bool point_spheres(const Eigen::MatrixXd& P,
 		RowVector3d YAxis = ZAxis.cross(XAxis);
 		YAxis.rowwise().normalize();
 
-		Matrix3d R; R << XAxis, YAxis, ZAxis;
+		Matrix3d R;
+		R << XAxis, YAxis, ZAxis;
 		RowVector3d translation = P.row(i);
 
 		V.block(VSphere.rows() * i, 0, VSphere.rows(), 3) = VSphere * R + translation.replicate(VSphere.rows(), 1);
@@ -99,16 +105,15 @@ IGL_INLINE bool point_spheres(const Eigen::MatrixXd& P,
 	return true;
 }
 
-
 Eigen::MatrixXd V_sphere;
 Eigen::MatrixXi T_sphere;
 Eigen::MatrixXd C_sphere;
-//Eigen::MatrixXd P = (Eigen::MatrixXd(1, 3) << 3.9, -18.4, 4.9).finished();
+// Eigen::MatrixXd P = (Eigen::MatrixXd(1, 3) << 3.9, -18.4, 4.9).finished();
 Eigen::MatrixXd P = (Eigen::MatrixXd(1, 3) << 0, 0, 4.9).finished();
 
-void init_spehre(Eigen::MatrixXd& V,
-	Eigen::MatrixXi& T,
-	Eigen::MatrixXd& C)
+void init_spehre(Eigen::MatrixXd &V,
+				 Eigen::MatrixXi &T,
+				 Eigen::MatrixXd &C)
 {
 	Eigen::MatrixXd normals = (Eigen::MatrixXd(1, 3) << 0, 1, 0).finished();
 	Eigen::MatrixXd sphereColors = (Eigen::MatrixXd(1, 3) << 1, 0, 0).finished();
@@ -122,25 +127,28 @@ using Vec4i = Eigen::RowVector4i;
 using Vec3i = Eigen::RowVector3i;
 using Vec2i = Eigen::RowVector2i;
 
-class Softbody {
+class Softbody
+{
 public:
-	Eigen::MatrixXd	 pos_;
-	Eigen::MatrixXd	 old_pos_;
-	Eigen::MatrixXd	 vel_;
-	Eigen::VectorXd	 w_;
-	Eigen::MatrixXi	 faces_;
-	Eigen::MatrixXi	 edges_;
-	Eigen::MatrixXi	 tets_;
-	Eigen::MatrixXd	lambda_;
-	Eigen::VectorXd	rest_length_;
-	Eigen::VectorXd	rest_volume_;
+	Eigen::MatrixXd pos_;
+	Eigen::MatrixXd old_pos_;
+	Eigen::MatrixXd vel_;
+	Eigen::VectorXd w_;
+	Eigen::MatrixXi faces_;
+	Eigen::MatrixXi edges_;
+	Eigen::MatrixXi tets_;
+	Eigen::MatrixXd lambda_;
+	Eigen::VectorXd rest_length_;
+	Eigen::VectorXd rest_volume_;
 
-	int num_vertices_{ 0 };
-	int num_edges_{ 0 };
-	int num_faces_{ 0 };
-	int num_tets_{ 0 };
+	int num_vertices_{0};
+	int num_edges_{0};
+	int num_faces_{0};
+	int num_tets_{0};
+
 private:
-	void read_node_file(const std::string node_file) {
+	void read_node_file(const std::string node_file)
+	{
 		std::ifstream infile(node_file);
 		std::string line;
 		std::getline(infile, line);
@@ -149,8 +157,10 @@ private:
 		ss >> num_vertices_ >> tmp1 >> tmp2 >> temp3;
 		pos_.resize(num_vertices_, 3);
 		int i = 0;
-		while (std::getline(infile, line)) {
-			if (line[0] == '#') continue;
+		while (std::getline(infile, line))
+		{
+			if (line[0] == '#')
+				continue;
 			std::stringstream ss(line);
 			int idx;
 			Real a, b, c;
@@ -160,7 +170,8 @@ private:
 		assert(pos_.rows() == num_vertices_);
 		infile.close();
 	}
-	void read_ele_file(const std::string ele_file) {
+	void read_ele_file(const std::string ele_file)
+	{
 		std::ifstream infile(ele_file);
 		std::string line;
 		std::getline(infile, line);
@@ -169,8 +180,10 @@ private:
 		ss >> num_tets_ >> tmp1 >> tmp2;
 		tets_.resize(num_tets_, 4);
 		int i = 0;
-		while (std::getline(infile, line)) {
-			if (line[0] == '#') continue;
+		while (std::getline(infile, line))
+		{
+			if (line[0] == '#')
+				continue;
 			std::stringstream ss(line);
 			int idx, a, b, c, d;
 			ss >> idx >> a >> b >> c >> d;
@@ -179,7 +192,8 @@ private:
 		assert(num_tets_ == tets_.rows());
 		infile.close();
 	}
-	void read_face_file(const std::string face_file) {
+	void read_face_file(const std::string face_file)
+	{
 		std::ifstream infile(face_file);
 		std::string line;
 		std::getline(infile, line);
@@ -188,8 +202,10 @@ private:
 		ss >> num_faces_ >> tmp1 >> tmp2;
 		faces_.resize(num_faces_, 3);
 		int i = 0;
-		while (std::getline(infile, line)) {
-			if (line[0] == '#') continue;
+		while (std::getline(infile, line))
+		{
+			if (line[0] == '#')
+				continue;
 			std::stringstream ss(line);
 			int idx, a, b, c;
 			ss >> idx >> a >> b >> c;
@@ -198,7 +214,8 @@ private:
 		assert(num_faces_ == faces_.rows());
 		infile.close();
 	}
-	void extract_edges() {
+	void extract_edges()
+	{
 		std::set<std::pair<int, int>> edges;
 		for (int i = 0; i < num_tets_; i++)
 		{
@@ -218,6 +235,7 @@ private:
 		}
 		num_edges_ = edges_.rows();
 	}
+
 public:
 	Softbody(const std::string node_file, const std::string ele_file, const std::string face_file)
 	{
@@ -227,12 +245,14 @@ public:
 		extract_edges();
 	}
 
-	void init_physical_data() {
+	void init_physical_data()
+	{
 		old_pos_ = pos_;
 		vel_ = Eigen::MatrixXd::Zero(num_vertices_, 3);
 		w_ = Eigen::VectorXd::Ones(num_vertices_);
 	}
-	void init_constraints() {
+	void init_constraints()
+	{
 		rest_length_.resize(num_edges_);
 		for (int i = 0; i < num_edges_; i++)
 		{
@@ -250,12 +270,14 @@ public:
 		}
 	}
 
-	void init_static_points(const std::vector<int>& static_points) {
+	void init_static_points(const std::vector<int> &static_points)
+	{
 		for (auto p : static_points)
 			w_[p] = 0.0;
 	}
 
-	void semi_euler(Real h) {
+	void semi_euler(Real h)
+	{
 		old_pos_ = pos_;
 		for (int i = 0; i < num_vertices_; i++)
 		{
@@ -266,17 +288,20 @@ public:
 			}
 		}
 	}
-	void solve_distance_constraints() {
+	void solve_distance_constraints()
+	{
 		for (int i = 0; i < num_edges_; i++)
 		{
 			int idx0 = edges_(i, 0), idx1 = edges_(i, 1);
 			Real w0 = w_[idx0], w1 = w_[idx1];
 			Real w_sum = w0 + w1;
-			if (w_sum == 0.0) continue;
+			if (w_sum == 0.0)
+				continue;
 
 			Vec3d p0p1 = pos_.row(idx0) - pos_.row(idx1);
 			Real len = p0p1.norm();
-			if (len == 0.0) continue;
+			if (len == 0.0)
+				continue;
 			Real constraint = len - rest_length_[i];
 			Vec3d normal = p0p1.normalized();
 			Real delta_lambda = -constraint / w_sum;
@@ -291,7 +316,8 @@ public:
 			}
 		}
 	}
-	void solve_volume_constraints() {
+	void solve_volume_constraints()
+	{
 		for (int i = 0; i < num_tets_; i++)
 		{
 			int idx0 = tets_(i, 0), idx1 = tets_(i, 1), idx2 = tets_(i, 2), idx3 = tets_(i, 3);
@@ -313,7 +339,8 @@ public:
 
 			Real delta_lambda = w0 * grad0.squaredNorm() + w1 * grad1.squaredNorm() + w2 * grad2.squaredNorm() + w2 * grad3.squaredNorm();
 
-			if (fabs(delta_lambda) < 1e-6) continue;
+			if (fabs(delta_lambda) < 1e-6)
+				continue;
 
 			Real constraint = volume - rest_volume_[i];
 
@@ -331,16 +358,20 @@ public:
 		}
 	}
 
-	void collision_response() {
-		for (int i = 0; i < num_vertices_; i++) {
-			if (w_[i] != 0.0f) {
+	void collision_response()
+	{
+		for (int i = 0; i < num_vertices_; i++)
+		{
+			if (w_[i] != 0.0f)
+			{
 				if (pos_(i, 1) < -20.0f)
 					pos_(i, 1) = -20.0f;
 			}
 		}
 	}
 
-	void update_velocity(Real h) {
+	void update_velocity(Real h)
+	{
 		for (int i = 0; i < num_vertices_; i++)
 		{
 			if (w_[i] != 0.0f)
@@ -350,7 +381,8 @@ public:
 		}
 	}
 
-	void collision_response(const Eigen::MatrixXd& Q) {
+	void collision_response(const Eigen::MatrixXd &Q)
+	{
 
 		// Choose type of signing to use
 		igl::SignedDistanceType sign_type = igl::SIGNED_DISTANCE_TYPE_PSEUDONORMAL;
@@ -361,64 +393,65 @@ public:
 
 		for (int i = 0; i < Q.rows(); i++)
 		{
-			if (S[i] < 0.0) { // collision response
-				//std::cout<< "The " << i << "-th point of the sphere is in the soft body!" << std::endl;
-				//std::cout<< "The signed distance: " << S[i] << std::endl;
-				//std::cout<< "The collision point: "<<Q.row(i)<<std::endl;
-				//std::cout<< "The triangle index: " << I[i] << std::endl;
-				//std::cout<< "The barycentric corrdinates is "<<C.row(i)<<std::endl;
-				//std::cout<< "The collision normal: "<<N.row(i)<<std::endl;
+			if (S[i] < 0.0)
+			{ // collision response
+				// std::cout<< "The " << i << "-th point of the sphere is in the soft body!" << std::endl;
+				// std::cout<< "The signed distance: " << S[i] << std::endl;
+				// std::cout<< "The collision point: "<<Q.row(i)<<std::endl;
+				// std::cout<< "The triangle index: " << I[i] << std::endl;
+				// std::cout<< "The barycentric corrdinates is "<<C.row(i)<<std::endl;
+				// std::cout<< "The collision normal: "<<N.row(i)<<std::endl;
 
 				Vec3i tri_idx = faces_.row(I[i]);
-				//Vec3d p0 = pos_.row(tri_idx[0]);
-				//Vec3d p1 = pos_.row(tri_idx[1]);
-				//Vec3d p2 = pos_.row(tri_idx[2]);
-				//Real constraint = S[i]; // signed distance (penetration depth)
+				// Vec3d p0 = pos_.row(tri_idx[0]);
+				// Vec3d p1 = pos_.row(tri_idx[1]);
+				// Vec3d p2 = pos_.row(tri_idx[2]);
+				// Real constraint = S[i]; // signed distance (penetration depth)
 
-				//Vec3d p10 = p1 - p0;
-				//Vec3d p20 = p2 - p0;
-				//Vec3d normal = p10.cross(p20);
-				//Real de = 1.0 / normal.norm();
-				//normal.normalize();
-				//Eigen::Vector3d n = normal.transpose();
-				//Vec3d p = Q.row(i);
-				//Eigen::Matrix3d p10x, p20x;
-				//p10x << 0.0, -p10[2], p10[1],
+				// Vec3d p10 = p1 - p0;
+				// Vec3d p20 = p2 - p0;
+				// Vec3d normal = p10.cross(p20);
+				// Real de = 1.0 / normal.norm();
+				// normal.normalize();
+				// Eigen::Vector3d n = normal.transpose();
+				// Vec3d p = Q.row(i);
+				// Eigen::Matrix3d p10x, p20x;
+				// p10x << 0.0, -p10[2], p10[1],
 				//	p10[2], 0.0, -p10[0],
 				//	-p10[1], p10[0], 0.0;
-				//p20x << 0.0, -p20[2], p20[1],
+				// p20x << 0.0, -p20[2], p20[1],
 				//	p20[2], 0.0, -p20[0],
 				//	-p20[1], p20[0], 0.0;
-				//Vec3d g1 = (p - p0) * de * (-p20x + n * (n.cross(p20).transpose()));
-				//Vec3d g2 = (p - p0) * -de * (-p10x + n * (n.cross(p10).transpose()));
-				//Vec3d g0 = -(g1 + g2);
+				// Vec3d g1 = (p - p0) * de * (-p20x + n * (n.cross(p20).transpose()));
+				// Vec3d g2 = (p - p0) * -de * (-p10x + n * (n.cross(p10).transpose()));
+				// Vec3d g0 = -(g1 + g2);
 
-				//Real w0 = w_[tri_idx[0]];
-				//Real w1 = w_[tri_idx[1]];
-				//Real w2 = w_[tri_idx[2]];
+				// Real w0 = w_[tri_idx[0]];
+				// Real w1 = w_[tri_idx[1]];
+				// Real w2 = w_[tri_idx[2]];
 
-				//Real delta_lambda = w0 * g0.squaredNorm() + w1 * g1.squaredNorm() + w2 * g2.squaredNorm();
-				//if(delta_lambda == 0.0) continue;
-				//delta_lambda = constraint / delta_lambda;
+				// Real delta_lambda = w0 * g0.squaredNorm() + w1 * g1.squaredNorm() + w2 * g2.squaredNorm();
+				// if(delta_lambda == 0.0) continue;
+				// delta_lambda = constraint / delta_lambda;
 
-				//Real stiffness = 0.5f;
-				//if (w0 != 0.0f)
+				// Real stiffness = 0.5f;
+				// if (w0 != 0.0f)
 				//	pos_.row(tri_idx[0]) += stiffness * delta_lambda * w0 * g0;
-				//if (w1 != 0.0f)
+				// if (w1 != 0.0f)
 				//	pos_.row(tri_idx[1]) += stiffness * delta_lambda * w1 * g1;
-				//if (w2 != 0.0f)
+				// if (w2 != 0.0f)
 				//	pos_.row(tri_idx[2]) += stiffness * delta_lambda * w2 * g2;
 
 				/*--------------first strategy--------------*/
-				//Real stiffness = 1.0;
-				//Real w0 = w_[tri_idx[0]];
-				//Real w1 = w_[tri_idx[1]];
-				//Real w2 = w_[tri_idx[2]];
-				//if (w0 != 0.0f)
+				// Real stiffness = 1.0;
+				// Real w0 = w_[tri_idx[0]];
+				// Real w1 = w_[tri_idx[1]];
+				// Real w2 = w_[tri_idx[2]];
+				// if (w0 != 0.0f)
 				//	pos_.row(tri_idx[0]) += stiffness * N.row(i) * S[i];
-				//if (w1 != 0.0f)
+				// if (w1 != 0.0f)
 				//	pos_.row(tri_idx[1]) += stiffness * N.row(i) * S[i];
-				//if (w2 != 0.0f)
+				// if (w2 != 0.0f)
 				//	pos_.row(tri_idx[2]) += stiffness * N.row(i) * S[i];
 
 				/*----------------Second strategy-----------------*/
@@ -442,21 +475,21 @@ public:
 			}
 		}
 
-
 		// Initialize AABB tree
-/*		igl::AABB<Eigen::MatrixXd, 3> tree;
-		tree.init(pos_, tets_);
-		Eigen::VectorXi I;
-		igl::in_element(pos_, tets_, Q, tree, I);
+		/*		igl::AABB<Eigen::MatrixXd, 3> tree;
+				tree.init(pos_, tets_);
+				Eigen::VectorXi I;
+				igl::in_element(pos_, tets_, Q, tree, I);
 
-		for (int i = 0; i < Q.rows(); i++) {
-			if (I[i] > 0.0) {
-				std::cout<<"The " << I[i] <<"-th element is in collision with the sphere!"<<std::endl;
-			}
-		}*/
+				for (int i = 0; i < Q.rows(); i++) {
+					if (I[i] > 0.0) {
+						std::cout<<"The " << I[i] <<"-th element is in collision with the sphere!"<<std::endl;
+					}
+				}*/
 	}
 
-	void update(Real h, int maxIte, const Eigen::MatrixXd& Q) {
+	void update(Real h, int maxIte, const Eigen::MatrixXd &Q)
+	{
 		semi_euler(h);
 		for (int ite = 0; ite < maxIte; ite++)
 		{
@@ -468,7 +501,8 @@ public:
 		update_velocity(h);
 	}
 
-	void write_obj(const std::string obj_file) {
+	void write_obj(const std::string obj_file)
+	{
 		std::ofstream outfile(obj_file);
 		for (int i = 0; i < num_vertices_; i++)
 		{
@@ -494,82 +528,93 @@ bool pause = true;
 Real speed = 0.1;
 int frame = 0;
 
-
-void update_sphere(const Vec3d& delta) {
+void update_sphere(const Vec3d &delta)
+{
 	P += delta;
 	for (int i = 0; i < V_sphere.rows(); i++)
 		V_sphere.row(i) += delta;
 }
 
-bool pre_draw(igl::opengl::glfw::Viewer& viewer) {
+bool pre_draw(igl::opengl::glfw::Viewer &viewer)
+{
 	if (!pause)
 	{
 		frame++;
 		Real height = 0.3 * std::sin(frame * 0.1);
-		//update_sphere(Vec3d(0.0, height, 0.0));
+		// update_sphere(Vec3d(0.0, height, 0.0));
 
 		// for (int i = 0; i < pull_points.size(); i++)
-			// softbody.pos_.row(pull_points[i]) += Vec3d(0.0, height, 0.0);
+		// softbody.pos_.row(pull_points[i]) += Vec3d(0.0, height, 0.0);
 
 		softbody.update(h, maxIte, V_sphere);
 	}
-	//softbody.write_obj("../model/liver2/f" +std::to_string(frame++) + ".obj");
+	// softbody.write_obj("../model/liver2/f" +std::to_string(frame++) + ".obj");
 
 	viewer.data().clear();
 	viewer.data().set_mesh(softbody.pos_, softbody.faces_);
 	viewer.core().align_camera_center(softbody.pos_, softbody.faces_);
 	viewer.append_mesh();
 	viewer.data().set_mesh(V_sphere, T_sphere);
-	//viewer.data_list[0].set_colors(Eigen::RowVector3d(1, 0, 0));
-	//viewer.data_list[1].set_colors(Eigen::RowVector3d(0, 1, 0));
+	// viewer.data_list[0].set_colors(Eigen::RowVector3d(1, 0, 0));
+	// viewer.data_list[1].set_colors(Eigen::RowVector3d(0, 1, 0));
 	return false;
 }
-bool post_draw(igl::opengl::glfw::Viewer& viewer) {
-	for (auto& data : viewer.data_list)
+bool post_draw(igl::opengl::glfw::Viewer &viewer)
+{
+	for (auto &data : viewer.data_list)
 	{
 		data.clear();
 	}
 	return false;
 }
 
-
-
-bool key_pressed(igl::opengl::glfw::Viewer& viewer, unsigned int key, int modifiers) {
-	if (key == 'p') {
+bool key_pressed(igl::opengl::glfw::Viewer &viewer, unsigned int key, int modifiers)
+{
+	if (key == 'p')
+	{
 		pause = !pause;
 		std::cout << std::boolalpha << pause << std::endl;
 	}
-	else if (key == 'a') {
+	else if (key == 'a')
+	{
 		update_sphere(Vec3d(-speed, 0, 0));
 	}
-	else if (key == 'w') {
+	else if (key == 'w')
+	{
 		update_sphere(Vec3d(0.0, speed, 0.0));
 	}
-	else if (key == 's') {
+	else if (key == 's')
+	{
 		update_sphere(Vec3d(0.0, -speed, 0.0));
 	}
-	else if (key == 'd') {
+	else if (key == 'd')
+	{
 		update_sphere(Vec3d(speed, 0.0, 0.0));
 	}
-	else if (key == 'r') {
+	else if (key == 'r')
+	{
 		update_sphere(Vec3d(0.0, 0.0, speed));
-
 	}
-	else if (key == 't') {
+	else if (key == 't')
+	{
 		update_sphere(Vec3d(0.0, 0.0, -speed));
 	}
-	else if (key == 'e') {
+	else if (key == 'e')
+	{
 		speed += 0.1;
 	}
-	else if (key == 'c') {
+	else if (key == 'c')
+	{
 		speed -= 0.1;
 	}
-	else if (key == 'b') {
+	else if (key == 'b')
+	{
 		std::cout << "sphere poinstion: " << P.row(0) << std::endl;
 	}
 	return false;
 }
-int main() {
+int main()
+{
 	init_spehre(V_sphere, T_sphere, C_sphere);
 	softbody.init_physical_data();
 
