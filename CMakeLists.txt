@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(example)
+project(xpbd_cpu)
 
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
@@ -26,6 +26,7 @@ igl_include(embree)
 
 # Add your project files
 file(GLOB SRC_FILES *.cpp)
+set(CMAKE_BUILD_TYP Release)
 add_executable(${PROJECT_NAME} ${SRC_FILES})
 
 # Link igl (and the glfw module) to your project
