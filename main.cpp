@@ -462,8 +462,9 @@ public:
 		{
 			solve_distance_constraints();
 			solve_volume_constraints();
-			collision_response(Q);
+			// collision_response(Q);
 		}
+		collision_response();
 		update_velocity(h);
 	}
 
@@ -486,7 +487,7 @@ public:
 	int get_num_tets() { return num_tets_; }
 };
 
-Softbody softbody("../model/liver2/liver.node", "../model/liver2/liver.ele", "../model/liver2/liver.face");
+Softbody softbody("../model/liver/liver.node", "../model/liver/liver.ele", "../model/liver/liver.face");
 Real h = 0.02;
 int maxIte = 5;
 bool pause = true;
@@ -507,8 +508,8 @@ bool pre_draw(igl::opengl::glfw::Viewer& viewer) {
 		Real height = 0.3 * std::sin(frame * 0.1);
 		//update_sphere(Vec3d(0.0, height, 0.0));
 
-		for (int i = 0; i < pull_points.size(); i++)
-			softbody.pos_.row(pull_points[i]) += Vec3d(0.0, height, 0.0);
+		// for (int i = 0; i < pull_points.size(); i++)
+			// softbody.pos_.row(pull_points[i]) += Vec3d(0.0, height, 0.0);
 
 		softbody.update(h, maxIte, V_sphere);
 	}
@@ -572,20 +573,20 @@ int main() {
 	init_spehre(V_sphere, T_sphere, C_sphere);
 	softbody.init_physical_data();
 
-	std::vector<int> static_points;
-	for (int i = 180; i < 200; i++)
-		static_points.push_back(i);
-	for (int i = 250; i < 260; i++)
-		static_points.push_back(i);
-	for (auto& p : pull_points)
-		static_points.push_back(p);
+	// std::vector<int> static_points;
+	// for (int i = 180; i < 200; i++)
+	// 	static_points.push_back(i);
+	// for (int i = 250; i < 260; i++)
+	// 	static_points.push_back(i);
+	// for (auto& p : pull_points)
+	// 	static_points.push_back(p);
 
 	std::cout << "Number of vertices: " << softbody.get_num_vertices() << std::endl;
 	std::cout << "Number of tets: " << softbody.get_num_tets() << std::endl;
 	std::cout << "Number of edges: " << softbody.get_num_edges() << std::endl;
 	std::cout << "Number of faces: " << softbody.get_num_faces() << std::endl;
 
-	softbody.init_static_points(static_points);
+	// softbody.init_static_points(static_points);
 	softbody.init_constraints();
 
 	igl::opengl::glfw::Viewer viewer;
