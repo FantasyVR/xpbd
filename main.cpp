@@ -137,7 +137,7 @@ public:
 	Eigen::MatrixXi faces_;
 	Eigen::MatrixXi edges_;
 	Eigen::MatrixXi tets_;
-	Eigen::MatrixXd lambda_;
+	Eigen::VectorXd lambda_;
 	Eigen::VectorXd rest_length_;
 	Eigen::VectorXd rest_volume_;
 
@@ -145,7 +145,8 @@ public:
 	int num_edges_{0};
 	int num_faces_{0};
 	int num_tets_{0};
-
+	Real dis_alpha_tilde_ {1.0e-5};
+	Real vol_alpha_tilde_ {1.0e-5};
 private:
 	void read_node_file(const std::string node_file)
 	{
@@ -270,6 +271,13 @@ public:
 		}
 	}
 
+	void init_xpbd(Real dis_alpha, Real vol_alpha, Real h){
+		lambda_.resize(num_edges_ + num_tets_);
+		lambda_.setZero();
+		dis_alpha_tilde_ = dis_alpha / h / h;
+		vol_alpha_tilde_ = vol_alpha / h / h / h;
+	}
+
 	void init_static_points(const std::vector<int> &static_points)
 	{
 		for (auto p : static_points)
@@ -304,15 +312,16 @@ public:
 				continue;
 			Real constraint = len - rest_length_[i];
 			Vec3d normal = p0p1.normalized();
-			Real delta_lambda = -constraint / w_sum;
+			Real delta_lambda = (constraint - lambda_[i] * dis_alpha_tilde_ )/ (w_sum + dis_alpha_tilde_);
+			lambda_[i] += delta_lambda;
 			Vec3d corr = 1.0 * delta_lambda * normal;
 			if (w0 != 0.0)
 			{
-				pos_.row(idx0) += w0 * corr;
+				pos_.row(idx0) += -w0 * corr;
 			}
 			if (w1 != 0.0)
 			{
-				pos_.row(idx1) -= w1 * corr;
+				pos_.row(idx1) -= -w1 * corr;
 			}
 		}
 	}
@@ -344,7 +353,8 @@ public:
 
 			Real constraint = volume - rest_volume_[i];
 
-			delta_lambda = constraint / delta_lambda;
+			delta_lambda = (constraint - lambda_[num_edges_+i] * vol_alpha_tilde_) / (delta_lambda + vol_alpha_tilde_);
+			lambda_[num_edges_+i] += delta_lambda;
 
 			Real stiffness = 1.0;
 			if (w0 != 0.0f)
@@ -491,6 +501,9 @@ public:
 	void update(Real h, int maxIte, const Eigen::MatrixXd &Q)
 	{
 		semi_euler(h);
+
+		lambda_.setZero();
+
 		for (int ite = 0; ite < maxIte; ite++)
 		{
 			solve_distance_constraints();
@@ -617,7 +630,7 @@ int main()
 {
 	init_spehre(V_sphere, T_sphere, C_sphere);
 	softbody.init_physical_data();
-
+	softbody.init_xpbd(1.0e-5, 1.0e-5, h);
 	// std::vector<int> static_points;
 	// for (int i = 180; i < 200; i++)
 	// 	static_points.push_back(i);
